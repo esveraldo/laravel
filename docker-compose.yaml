@@ -1,18 +1,25 @@
-version: '2.3'
+version: '3'
 
 services:
     #3°
     app:
         build: .
         container_name: app
+        entrypoint: dockerize -template ./.docker/app/.env:.env -wait tcp://db:3306 -timeout 40s ./.docker/entrypoint.sh
+        environment: 
+            - DB_HOST=db
+            - DB_DATABASE=laravel
+            - DB_USERNAME=root
+            - DB_PASSWORD=root
         volumes:
             - .:/var/www
         networks:
             - app-network
         #Evita o erro ao carregar o volume do banco de dados
         depends_on:
-            db:
-                condition: service_healthy
+            - db
+            - redis
+
     #1°
     nginx:
         build: .docker/nginx
@@ -25,6 +32,8 @@ services:
             - .:/var/www
         networks:
             - app-network
+        depends_on:
+            - app
     #5°
     db:
         image: mysql:5.7
@@ -42,13 +51,7 @@ services:
             - MYSQL_USER=root
         networks:
             - app-network
-        #Verifica se o banco de dados está pronto 
-        healthcheck:
-            test: ["CMD-SHELL", 'mysql -uroot --database=laravel --password=root --execute="SELECT count(table_name) > 0 FROM information_schema.tables;" --skip-column-names -B']
-            interval: 10s
-            timeout: 10s
-            retries: 4
-
+        
     #2°
     redis:
         image: redis:alpine
