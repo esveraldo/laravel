@@ -9,20 +9,17 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
 
 WORKDIR /var/www
 RUN rm -rf /var/www/html
-COPY  . /var/www
+RUN ln -s public html
+COPY . /var/www
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
+RUN composer install \
+	&& php artisan key:generate \
+	&& php artisan cache:clear \
+        && chmod 775 -R storage
+ 
 RUN npm install
-
-#RUN composer install \
-#	&& php artisan key:generate \
-#	&& php artisan cache:clear \
-#       && chmod 775 -R storage
-RUN     chmod 775 -R storage
-
-
-RUN ln -s public html
 
 EXPOSE 9000
 ENTRYPOINT ["php-fpm"]
