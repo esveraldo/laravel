@@ -12,7 +12,7 @@ RUN rm -rf /var/www/html
 RUN ln -s public html
 COPY . /var/www
 
-RUN chown -R $USER:$USER /var/www
+RUN chown -R www-data:www-data /var/www
 RUN chmod 755 /var/www
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
