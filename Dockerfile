@@ -13,13 +13,14 @@ RUN ln -s public html
 COPY . /var/www
 
 RUN chown -R www-data:www-data /var/www
+RUN chmod 755 /var/www
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 RUN composer install \
 	&& php artisan key:generate \
 	&& php artisan cache:clear \
-        && chmod -R 775 /var/www/storage
+        && chmod 777 storage/ storage/*
  
 RUN npm install
 
